@@ -4,6 +4,7 @@ const BFactor = 4
 
 type Node struct {
 	// for normal non-leaf /internal node
+	id int
 	isLeaf bool
 	keys []int
 	children []interface{}
@@ -15,19 +16,25 @@ type Node struct {
 }
 
 // to create internal node
-func NewInternalNode() *Node {
-	return &Node{
+func NewInternalNode(dm *DiskManager) *Node {
+	id := dm.AllocatePage()
+	node := &Node{
+		id : id,
 		isLeaf : false,
 		keys : make([]int, 0, BFactor-1),
 		children : make([]any, 0, BFactor),
 		next : -1,
 		prev : -1,
 	}
+	dm.WriteNode(id,node)
+	return node
 }
 
 // to create leaf node
-func NewLeafNode() *Node {
-	return &Node{
+func NewLeafNode(dm *DiskManager) *Node {
+	id := dm.AllocatePage()
+	node := &Node{
+		id: id,
 		isLeaf : true,
 		keys : make([]int, 0, BFactor-1),
 		children : nil,
@@ -35,6 +42,8 @@ func NewLeafNode() *Node {
 		next : -1,
 		prev : -1,
 	}
+	dm.WriteNode(id,node)
+	return node
 }
 
 // to check if node is full, this needs to be methord
@@ -80,13 +89,13 @@ func (n *Node) InsertIntoLeaf(key int, value []byte) {
 
 
 // splitting leaf and returns the new node and split key
-func (n *Node) SplitLeaf() (*Node, int) {
+func (n *Node) SplitLeaf(dm *DiskManager) (*Node, int) {
 	if !n.isLeaf {
 		panic("Invalid method called, spliting in leaf node called")
 	}
 	// finding middle element and spliting node
 	mid := len(n.keys)/2
-	newNode := NewLeafNode()
+	newNode := NewLeafNode(dm)
 	// ellipsis operator (...) to open the values if slice/list
 	newNode.keys = append(newNode.keys, n.keys[mid:]...)
 	newNode.values = append(newNode.values, n.values[mid:]...)
@@ -95,19 +104,23 @@ func (n *Node) SplitLeaf() (*Node, int) {
 
 	// updateing ptrs
 	newNode.next = n.next
-	newNode.prev = n.next
-	n.next = newNode.prev
+	newNode.prev = n.id
+	if n.next != -1 {
+		nextNode := dm.ReadNode(n.next)
+		nextNode.prev = newNode.id
+	}
+	n.next = newNode.id
 	return newNode, newNode.keys[0]
 }
 
 // spliting internal node and returns the new node and split key
 // this is similiar to splitleaf, just with children updated instead of values
-func (n *Node) SplitInternal() (*Node, int) {
+func (n *Node) SplitInternal(dm *DiskManager) (*Node, int) {
 	if n.isLeaf {
 		panic("Invalid method called, spliting in non leaf node called")
 	}
 	mid := len(n.keys)/2
-	newNode := NewInternalNode()
+	newNode := NewInternalNode(dm)
 	splitKey := n.keys[mid]
 	newNode.keys = append(newNode.keys, n.keys[mid+1:]...)
 	newNode.children = append(newNode.children, n.children[mid+1:]...)
