@@ -7,7 +7,7 @@ type Node struct {
 	id int
 	isLeaf bool
 	keys []int
-	children []interface{}
+	children []int
 
 	// for leaf nodes
 	values [][]byte
@@ -22,7 +22,7 @@ func NewInternalNode(dm *DiskManager) *Node {
 		id : id,
 		isLeaf : false,
 		keys : make([]int, 0, BFactor-1),
-		children : make([]any, 0, BFactor),
+		children : make([]int, 0, BFactor),
 		next : -1,
 		prev : -1,
 	}
