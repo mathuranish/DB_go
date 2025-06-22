@@ -59,7 +59,7 @@ Build and run the CLI:
 go run cmd/main.go
 ```
 
-Use the interactive CLI:B+ Tree Database CLI
+Use the interactive CLI:
 ```
 Commands:
   put <key> <value> - Insert a key-value pair
@@ -73,7 +73,7 @@ Key 1: hello world
 Exiting...
 ```
 
-NOTE - _Data is stored in database.db and persists between runs._
+_Data is stored in database.db and persists between runs._
 
 ## Notes
 
