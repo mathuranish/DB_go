@@ -6,7 +6,7 @@ type Database struct {
 }
 
 func NewDatabase() (*Database, error) {
-	dm, err := NewDiskManager("database_test.dat")
+	dm, err := NewDiskManager("database_test.db")
 	if err != nil {
 		return nil, err
 	}
