@@ -11,7 +11,12 @@ import (
 )
 
 func main() {
-	db := internals.NewDatabase()
+	db, err := internals.NewDatabase()
+	if err != nil {
+		fmt.Println("Error creating database:", err)
+		return
+	}
+	defer db.Close()
 
 	fmt.Println("B+ Tree Database CLI")
 	fmt.Println("Commands:")

@@ -2,12 +2,19 @@ package internals
 
 type Database struct {
 	tree *BPTree
+	dm *DiskManager
 }
 
-func NewDatabase() *Database {
-	dm := NewDiskManager()
+func NewDatabase() (*Database, error) {
+	dm, err := NewDiskManager("database_test.dat")
+	if err != nil {
+		return nil, err
+	}
 	tree := NewTree(dm)
-	return &Database{tree: tree}
+	return &Database{
+		tree: tree,
+		dm:   dm,
+	}, nil
 }
 
 func (db *Database) Put(key int, value []byte) {
@@ -16,4 +23,8 @@ func (db *Database) Put(key int, value []byte) {
 
 func (db *Database) Get(key int) ([]byte, bool) {
 	return db.tree.SeachInTree(key)
+}
+
+func (db *Database) Close() error {
+	return db.dm.Close()
 }

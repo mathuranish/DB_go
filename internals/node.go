@@ -108,8 +108,11 @@ func (n *Node) SplitLeaf(dm *DiskManager) (*Node, int) {
 	if n.next != -1 {
 		nextNode := dm.ReadNode(n.next)
 		nextNode.prev = newNode.id
+		dm.WriteNode(nextNode.id, nextNode)
 	}
 	n.next = newNode.id
+	dm.WriteNode(n.id, n)
+	dm.WriteNode(newNode.id, newNode)
 	return newNode, newNode.keys[0]
 }
 
@@ -119,13 +122,15 @@ func (n *Node) SplitInternal(dm *DiskManager) (*Node, int) {
 	if n.isLeaf {
 		panic("Invalid method called, spliting in non leaf node called")
 	}
-	mid := len(n.keys)/2
-	newNode := NewInternalNode(dm)
+	mid := len(n.keys) / 2
 	splitKey := n.keys[mid]
+	newNode := NewInternalNode(dm)
 	newNode.keys = append(newNode.keys, n.keys[mid+1:]...)
 	newNode.children = append(newNode.children, n.children[mid+1:]...)
 	n.keys = n.keys[:mid]
 	n.children = n.children[:mid+1]
+	dm.WriteNode(n.id, n)
+	dm.WriteNode(newNode.id, newNode)
 	return newNode, splitKey
 }
 

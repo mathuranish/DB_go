@@ -20,6 +20,7 @@ func (t *BPTree) insertIntoNode(node *Node, key int, value []byte) (*Node, int, 
 	// adding to leaf node
 	if node.isLeaf {
 		node.InsertIntoLeaf(key, value)
+		t.dm.WriteNode(node.id, node)
 		if len(node.keys) > BFactor-1 {
 			newNode, splitKey := node.SplitLeaf(t.dm)
 			return newNode, splitKey, false
@@ -39,6 +40,8 @@ func (t *BPTree) insertIntoNode(node *Node, key int, value []byte) (*Node, int, 
 		node.children = append(node.children, 0)
 		copy(node.children[idx+2:], node.children[idx+1:])
 		node.children[idx+1] = newChild.id
+		t.dm.WriteNode(node.id, node)
+
 		if len(node.keys) > BFactor-1 {
 			newNode, splitKey := node.SplitInternal(t.dm)
 			return newNode, splitKey, true
@@ -60,6 +63,7 @@ func (t *BPTree) InsertNode(key int, value []byte) {
 		newRoot := NewInternalNode(t.dm)
 		newRoot.keys = []int{splitKey}
 		newRoot.children = []int{root.id, newNode.id}
+		t.dm.WriteNode(newRoot.id, newRoot)
 		t.rootPage = newRoot.id
 	}
 
